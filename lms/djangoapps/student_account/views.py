@@ -7,6 +7,7 @@ import urlparse
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 )
@@ -25,6 +26,8 @@ from external_auth.login_and_register import (
     login as external_auth_login,
     register as external_auth_register
 )
+from lms.djangoapps.commerce.models import CommerceConfiguration
+from lms.djangoapps.shoppingcart.api import order_history
 from student.models import UserProfile
 from student.views import (
     signin_user as old_login_view,
@@ -36,6 +39,8 @@ from third_party_auth import pipeline
 from third_party_auth.decorators import xframe_allow_whitelisted
 from util.bad_request_rate_limiter import BadRequestRateLimiter
 
+from microsite_configuration import microsite
+from openedx.core.djangoapps.commerce.utils import ecommerce_api_client
 from openedx.core.djangoapps.theming.helpers import is_request_in_themed_site, get_value as get_themed_value
 from openedx.core.djangoapps.user_api.accounts.api import request_password_change
 from openedx.core.djangoapps.user_api.errors import UserNotFound
@@ -299,6 +304,33 @@ def _external_auth_intercept(request, mode):
         return external_auth_login(request)
     elif mode == "register":
         return external_auth_register(request)
+
+
+
+def _get_order_details(user):
+    """ Retrieve order details for the user. """
+    order_details = []
+    cache_key = CommerceConfiguration.CACHE_KEY + '.' + user.username
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    # for microsites, we want to filter and only show enrollments for courses within
+    # the microsites 'ORG'
+    course_org_filter = microsite.get_value('course_org_filter')
+
+    # Let's filter out any courses in an "org" that has been declared to be
+    # in a Microsite
+    org_filter_out_set = microsite.get_all_orgs()
+
+    lms_order_details = order_history(user, course_org_filter=course_org_filter, org_filter_out_set=org_filter_out_set)
+    commerce_order_details = ecommerce_api_client(user).order.get()
+    order_details.append(commerce_order_details)
+    order_details.append(lms_order_details)
+
+    cache.set(cache_key, order_details, CommerceConfiguration.CACHE_TTL)
+
+    return order_details
 
 
 @login_required

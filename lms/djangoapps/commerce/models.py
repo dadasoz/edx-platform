@@ -13,6 +13,9 @@ class CommerceConfiguration(ConfigurationModel):
     class Meta(object):
         app_label = "commerce"
 
+    CACHE_KEY = 'commerce.api.data'
+    CACHE_TTL = 3600
+
     checkout_on_ecommerce_service = models.BooleanField(
         default=False,
         help_text=_('Use the checkout page hosted by the E-Commerce service.')

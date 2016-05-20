@@ -203,6 +203,10 @@ class DiscussionHomePageTest(UniqueCourseTest):
         self.page.click_new_post_button()
         self.assertIsNotNone(self.page.new_post_form)
 
+    def test_page_accessibility(self):
+        report = self.page.a11y_audit.do_audit()
+        self.assertEqual(3, len(report))
+
 
 @attr('shard_2')
 class DiscussionTabSingleThreadTest(BaseDiscussionTestCase, DiscussionResponsePaginationTestMixin):
@@ -331,6 +335,13 @@ class DiscussionTabMultipleThreadTest(BaseDiscussionTestCase):
         # Verify that the focus is changed
         self.thread_page_2.check_focus_is_set(selector=".discussion-article")
 
+    def test_page_accessibility(self):
+        report = self.thread_page_1.a11y_audit.do_audit()
+        self.assertEqual(4, len(report))
+
+        report = self.thread_page_2.a11y_audit.do_audit()
+        self.assertEqual(4, len(report))
+
 
 @attr('shard_2')
 class DiscussionOpenClosedThreadTest(BaseDiscussionTestCase):
@@ -379,6 +390,15 @@ class DiscussionOpenClosedThreadTest(BaseDiscussionTestCase):
         self.assertFalse(page._is_element_visible('.forum-thread-main-wrapper .display-vote'))
         self.assertTrue(page._is_element_visible('.response_response1 .action-vote'))
         self.assertFalse(page._is_element_visible('.response_response1 .display-vote'))
+
+    def test_page_accessibility(self):
+        page = self.setup_openclosed_thread_page()
+        report = page.a11y_audit.do_audit()
+        self.assertEqual(4, len(report))
+
+        page = self.setup_openclosed_thread_page(True)
+        report = page.a11y_audit.do_audit()
+        self.assertEqual(4, len(report))
 
 
 @attr('shard_2')
@@ -653,6 +673,11 @@ class DiscussionResponseEditTest(BaseDiscussionTestCase):
         page.endorse_response('response_self_author')
         page.endorse_response('response_other_author')
 
+    def test_page_accessibility(self):
+        page = self.create_single_thread_page("response_edit_test_thread")
+        report = page.a11y_audit.do_audit()
+        self.assertEqual(2, len(report))
+
 
 @attr('shard_2')
 class DiscussionCommentEditTest(BaseDiscussionTestCase):
@@ -735,6 +760,11 @@ class DiscussionCommentEditTest(BaseDiscussionTestCase):
         page.cancel_comment_edit("comment_self_author", original_body)
         self.assertFalse(page.is_comment_editor_visible("comment_self_author"))
         self.assertTrue(page.is_add_comment_visible("response1"))
+
+    def test_page_accessibility(self):
+        page = self.create_single_thread_page("comment_edit_test_thread")
+        report = page.a11y_audit.do_audit()
+        self.assertEqual(2, len(report))
 
 
 @attr('shard_2')
@@ -1097,6 +1127,10 @@ class DiscussionSearchAlertTest(UniqueCourseTest):
             self.searched_user_id,
             self.SEARCHED_USERNAME
         ).wait_for_page()
+
+    def test_page_accessibility(self):
+        report = self.page.a11y_audit.do_audit()
+        self.assertEqual(3, len(report))
 
 
 @attr('shard_2')

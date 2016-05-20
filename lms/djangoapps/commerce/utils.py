@@ -48,7 +48,13 @@ class EcommerceService(object):
         """
         Determines the availability of the Ecommerce service based on user activation and service configuration.
         """
-        return user.is_active and self.config.checkout_on_ecommerce_service
+        return user.is_active and self.is_ecommerce_checkout_enabled()
+
+    def is_ecommerce_checkout_enabled(self):
+        """
+        Determines the availability of the Ecommerce service configuration.
+        """
+        return self.config.checkout_on_ecommerce_service
 
     def payment_page_url(self):
         """ Return the URL for the checkout page.

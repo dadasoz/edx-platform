@@ -579,7 +579,7 @@ def course_about(request, course_id):
         professional_mode = None
         ecomm_service = EcommerceService()
         is_professional_mode = CourseMode.PROFESSIONAL in modes or CourseMode.NO_ID_PROFESSIONAL_MODE in modes
-        if ecomm_service.is_enabled(request.user) and (is_professional_mode):
+        if ecomm_service.is_ecommerce_checkout_enabled() and (is_professional_mode):
             professional_mode = modes.get(CourseMode.PROFESSIONAL, '') or \
                 modes.get(CourseMode.NO_ID_PROFESSIONAL_MODE, '')
             ecommerce_checkout_link = ecomm_service.checkout_page_url(professional_mode.sku)

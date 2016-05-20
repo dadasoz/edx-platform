@@ -13,7 +13,7 @@ from nose.plugins.attrib import attr
 
 from student.models import CourseEnrollment
 from student.tests.factories import UserFactory
-
+import mock
 
 @attr('shard_1')
 class InstructorServiceTests(SharedModuleStoreTestCase):
@@ -122,7 +122,7 @@ class InstructorServiceTests(SharedModuleStoreTestCase):
 
     def test_is_user_staff(self):
         """
-        Test to assert that the usrr is staff or not
+        Test to assert that the user is staff or not
         """
         result = self.service.is_course_staff(
             self.student,
@@ -137,3 +137,24 @@ class InstructorServiceTests(SharedModuleStoreTestCase):
             unicode(self.course.id)
         )
         self.assertTrue(result)
+
+    def test_report_suspicious_attempt(self):
+        """
+        Test to verify that the create_zendesk_ticket() is called
+        """
+        with mock.patch("commerce.signals.create_zendesk_ticket") as mock_create_zendesk_ticket:
+            self.service.report_suspicious_attempt(unicode(self.course.id), "test_exam", "test_student")
+
+
+            requester_name = "edx-proctoring"
+            email = "edx-proctoring@edx.org"
+            subject = "Suspicious Exam Review"
+            body = "A proctored exam attempt for {exam_name} in {course_name} by username: {student_username} " \
+                   "was reviewed as suspicious by the proctored exam review provider.".format(
+                        exam_name="test_exam",
+                        course_name=self.course.display_name,
+                        student_username="test_student"
+                    )
+            tags = ["proctoring"]
+
+        mock_create_zendesk_ticket.assert_called_once_with(requester_name, email, subject, body, tags)

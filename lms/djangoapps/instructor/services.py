@@ -6,10 +6,15 @@ import logging
 
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey, UsageKey
+from commerce.signals import create_zendesk_ticket
 from courseware.models import StudentModule
 from instructor.views.tools import get_student_from_identifier
 from django.core.exceptions import ObjectDoesNotExist
 import instructor.enrollment as enrollment
+from django.utils.translation import ugettext_lazy as _
+
+
+from xmodule.modulestore.django import modulestore
 
 from student.roles import CourseStaffRole
 
@@ -86,3 +91,25 @@ class InstructorService(object):
         else Returns False
         """
         return auth.user_has_role(user, CourseStaffRole(CourseKey.from_string(course_id)))
+
+    def report_suspicious_attempt(self, course_id, exam_name, student_username):
+        """
+        Creates a Zendesk ticket if an exam attempt is reported as suspicious from the proctoring system.
+        """
+
+        course_key = CourseKey.from_string(course_id)
+        course = modulestore().get_course(course_key)
+        if course.create_zendesk_tickets:
+            requester_name = "edx-proctoring"
+            email = "edx-proctoring@edx.org"
+            subject = _("Suspicious Exam Review")
+            body = _(
+                "A proctored exam attempt for {exam_name} in {course_name} by username: {student_username} "
+                "was reviewed as suspicious by the proctored exam review provider."
+            ).format(
+                exam_name=exam_name,
+                course_name=course.display_name,
+                student_username=student_username
+            )
+            tags = ["proctoring"]
+            create_zendesk_ticket(requester_name, email, subject, body, tags)

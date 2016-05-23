@@ -37,7 +37,7 @@ class CredentialsDataMixin(object):
             factories.UserCredentials(
                 id=1,
                 username='test',
-                credential=factories.ProgramCredentials(
+                credential=factories.ProgramCredential(
                     program_id=1
                 )
 
@@ -45,7 +45,7 @@ class CredentialsDataMixin(object):
             factories.UserCredentials(
                 id=2,
                 username='test',
-                credential=factories.ProgramCredentials(
+                credential=factories.ProgramCredential(
                     program_id=2
                 )
             ),
@@ -53,28 +53,28 @@ class CredentialsDataMixin(object):
                 id=3,
                 status='revoked',
                 username='test',
-                credential=factories.ProgramCredentials(
+                credential=factories.ProgramCredential(
                     program_id=3
                 )
             ),
             factories.UserCredentials(
                 id=4,
                 username='test',
-                credential=factories.CourseCredentials(
+                credential=factories.CourseCredential(
                     certificate_type='honor'
                 )
             ),
             factories.UserCredentials(
                 id=5,
                 username='test',
-                credential=factories.CourseCredentials(
+                credential=factories.CourseCredential(
                     course_id='edx/test02/2015'
                 )
             ),
             factories.UserCredentials(
                 id=6,
                 username='test',
-                credential=factories.CourseCredentials(
+                credential=factories.CourseCredential(
                     course_id='edx/test02/2015'
                 )
             ),
@@ -87,38 +87,19 @@ class CredentialsDataMixin(object):
             factories.UserCredentials(
                 id=7,
                 username='test',
-                credential=factories.ProgramCredentials(
+                credential=factories.ProgramCredential(
                     program_id=7
                 )
             ),
             factories.UserCredentials(
                 id=8,
                 username='test',
-                credential=factories.ProgramCredentials(
+                credential=factories.ProgramCredential(
                     program_id=8
                 )
             )
         ]
     }
-
-    def get_program_credentials_data(self):
-        """ Returns programs credentials data. """
-        return [
-            factories.UserCredentials(
-                id=1,
-                username='test',
-                credential=factories.ProgramCredentials(
-                    program_id=1
-                )
-            ),
-            factories.UserCredentials(
-                id=2,
-                username='test',
-                credential=factories.ProgramCredentials(
-                    program_id=2
-                )
-            )
-        ]
 
     def mock_credentials_api(self, user, data=None, status_code=200, reset_url=True, is_next_page=False):
         """Utility for mocking out Credentials API URLs."""

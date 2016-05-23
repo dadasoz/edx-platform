@@ -18,7 +18,7 @@ class UserCredentials(factory.Factory):
     credential = {}
 
 
-class ProgramCredentials(factory.Factory):
+class ProgramCredential(factory.Factory):
     """Factory for stubbing program credentials resources from the Program
     Credentials API (v1).
     """
@@ -29,7 +29,7 @@ class ProgramCredentials(factory.Factory):
     program_id = factory.Sequence(lambda n: n)
 
 
-class CourseCredentials(factory.Factory):
+class CourseCredential(factory.Factory):
     """Factory for stubbing course credentials resources from the Course
     Credentials API (v1).
     """
@@ -39,15 +39,3 @@ class CourseCredentials(factory.Factory):
     course_id = 'edx/test01/2015'
     credential_id = factory.Sequence(lambda n: n)
     certificate_type = 'verified'
-
-
-class ProgramCredential(factory.Factory):
-    """
-    Factory for stubbing program credentials dicts.
-    """
-    class Meta(object):
-        model = dict
-
-    display_name = FuzzyText(prefix='Program ')
-    subtitle = FuzzyText(prefix='Subtitle ')
-    credential_url = None

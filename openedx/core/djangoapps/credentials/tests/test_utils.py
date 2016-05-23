@@ -41,20 +41,41 @@ class TestCredentialsRetrieval(ProgramsApiConfigMixin, CredentialsApiConfigMixin
 
         cache.clear()
 
+    def _expected_progam_credentials_data(self):
+        """
+        Dry method for getting expected program credentials response data.
+        """
+        return [
+            factories.UserCredentials(
+                id=1,
+                username='test',
+                credential=factories.ProgramCredential(
+                    program_id=1
+                )
+            ),
+            factories.UserCredentials(
+                id=2,
+                username='test',
+                credential=factories.ProgramCredential(
+                    program_id=2
+                )
+            )
+        ]
+
     def expected_credentials_display_data(self):
         """ Returns expected credentials data to be represented. """
-        program_credentials_data = self.get_program_credentials_data()
+        program_credentials_data = self._expected_progam_credentials_data()
         return [
-            factories.ProgramCredential(
-                display_name=self.PROGRAMS_API_RESPONSE['results'][0]['name'],
-                subtitle=self.PROGRAMS_API_RESPONSE['results'][0]['subtitle'],
-                credential_url=program_credentials_data[0]['certificate_url']
-            ),
-            factories.ProgramCredential(
-                display_name=self.PROGRAMS_API_RESPONSE['results'][1]['name'],
-                subtitle=self.PROGRAMS_API_RESPONSE['results'][1]['subtitle'],
-                credential_url=program_credentials_data[1]['certificate_url']
-            )
+            {
+                'display_name': self.PROGRAMS_API_RESPONSE['results'][0]['name'],
+                'subtitle': self.PROGRAMS_API_RESPONSE['results'][0]['subtitle'],
+                'credential_url':program_credentials_data[0]['certificate_url']
+            },
+            {
+                'display_name': self.PROGRAMS_API_RESPONSE['results'][1]['name'],
+                'subtitle':self.PROGRAMS_API_RESPONSE['results'][1]['subtitle'],
+                'credential_url':program_credentials_data[1]['certificate_url']
+            }
         ]
 
     @httpretty.activate
@@ -116,7 +137,7 @@ class TestCredentialsRetrieval(ProgramsApiConfigMixin, CredentialsApiConfigMixin
         self.mock_credentials_api(self.user, reset_url=False)
 
         actual = get_user_program_credentials(self.user)
-        program_credentials_data = self.get_program_credentials_data()
+        program_credentials_data = self._expected_progam_credentials_data()
         expected = self.PROGRAMS_API_RESPONSE['results'][:2]
         expected[0]['credential_url'] = program_credentials_data[0]['certificate_url']
         expected[1]['credential_url'] = program_credentials_data[1]['certificate_url']

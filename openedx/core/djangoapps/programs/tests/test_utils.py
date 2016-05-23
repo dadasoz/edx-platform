@@ -12,6 +12,7 @@ from edx_oauth2_provider.tests.factories import ClientFactory
 from provider.constants import CONFIDENTIAL
 
 from lms.djangoapps.certificates.api import MODES
+from openedx.core.djangoapps.credentials.tests import factories as credentials_factories
 from openedx.core.djangoapps.credentials.tests.mixins import CredentialsApiConfigMixin, CredentialsDataMixin
 from openedx.core.djangoapps.programs import utils
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
@@ -39,6 +40,27 @@ class TestProgramRetrieval(ProgramsApiConfigMixin, ProgramsDataMixin, Credential
         self.user = UserFactory()
 
         cache.clear()
+
+    def _expected_progam_credentials_data(self):
+        """
+        Dry method for getting expected program credentials response data.
+        """
+        return [
+            credentials_factories.UserCredentials(
+                id=1,
+                username='test',
+                credential=credentials_factories.ProgramCredential(
+                    program_id=1
+                )
+            ),
+            credentials_factories.UserCredentials(
+                id=2,
+                username='test',
+                credential=credentials_factories.ProgramCredential(
+                    program_id=2
+                )
+            )
+        ]
 
     @httpretty.activate
     def test_get_programs(self):
@@ -152,7 +174,7 @@ class TestProgramRetrieval(ProgramsApiConfigMixin, ProgramsDataMixin, Credential
         """Verify programs data can be retrieved and parsed correctly for certificates."""
         self.create_programs_config()
         self.mock_programs_api()
-        program_credentials_data = self.get_program_credentials_data()
+        program_credentials_data = self._expected_progam_credentials_data()
 
         actual = utils.get_programs_for_credentials(self.user, program_credentials_data)
         expected = self.PROGRAMS_API_RESPONSE['results'][:2]
@@ -168,7 +190,7 @@ class TestProgramRetrieval(ProgramsApiConfigMixin, ProgramsDataMixin, Credential
         self.create_programs_config()
         self.create_credentials_config()
         self.mock_programs_api(data={'results': []})
-        program_credentials_data = self.get_program_credentials_data()
+        program_credentials_data = self._expected_progam_credentials_data()
 
         actual = utils.get_programs_for_credentials(self.user, program_credentials_data)
         self.assertEqual(actual, [])

@@ -156,20 +156,41 @@ class TestProgramListing(
             '{}?next={}'.format(reverse('signin_user'), self.url)
         )
 
+    def _expected_progam_credentials_data(self):
+        """
+        Dry method for getting expected program credentials response data.
+        """
+        return [
+            credentials_factories.UserCredentials(
+                id=1,
+                username='test',
+                credential=credentials_factories.ProgramCredential(
+                    program_id=1
+                )
+            ),
+            credentials_factories.UserCredentials(
+                id=2,
+                username='test',
+                credential=credentials_factories.ProgramCredential(
+                    program_id=2
+                )
+            )
+        ]
+
     def _expected_credentials_data(self):
         """ Dry method for getting expected credentials."""
-        program_credentials_data = self.get_program_credentials_data()
+        program_credentials_data = self._expected_progam_credentials_data()
         return [
-            credentials_factories.ProgramCredential(
-                display_name=self.PROGRAMS_API_RESPONSE['results'][0]['name'],
-                subtitle=self.PROGRAMS_API_RESPONSE['results'][0]['subtitle'],
-                credential_url=program_credentials_data[0]['certificate_url']
-            ),
-            credentials_factories.ProgramCredential(
-                display_name=self.PROGRAMS_API_RESPONSE['results'][1]['name'],
-                subtitle=self.PROGRAMS_API_RESPONSE['results'][1]['subtitle'],
-                credential_url=program_credentials_data[1]['certificate_url']
-            )
+            {
+                'display_name': self.PROGRAMS_API_RESPONSE['results'][0]['name'],
+                'subtitle': self.PROGRAMS_API_RESPONSE['results'][0]['subtitle'],
+                'credential_url':program_credentials_data[0]['certificate_url']
+            },
+            {
+                'display_name': self.PROGRAMS_API_RESPONSE['results'][1]['name'],
+                'subtitle':self.PROGRAMS_API_RESPONSE['results'][1]['subtitle'],
+                'credential_url':program_credentials_data[1]['certificate_url']
+            }
         ]
 
     @httpretty.activate

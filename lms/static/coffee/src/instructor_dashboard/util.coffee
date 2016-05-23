@@ -123,6 +123,7 @@ find_and_assert = ($root, selector) ->
 subject_formatter = (row, cell, value, columnDef, dataContext) ->
   if value is null then return gettext("An error occurred retrieving your email. Please try again later, and contact technical support if the problem persists.")
   subject_text = $('<span>').text(value['subject']).html()
+  debugger;
   return edx.HtmlUtils.joinHtml(
     edx.HtmlUtils.HTML('<p><a href="#email_message_'),
     value['id'],

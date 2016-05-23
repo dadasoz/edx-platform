@@ -22,12 +22,12 @@ from django.views.decorators.http import require_http_methods
 from lang_pref.api import released_languages, all_languages
 from edxmako.shortcuts import render_to_response
 
+from commerce.models import CommerceConfiguration
 from external_auth.login_and_register import (
     login as external_auth_login,
     register as external_auth_register
 )
-from lms.djangoapps.commerce.models import CommerceConfiguration
-from lms.djangoapps.shoppingcart.api import order_history
+from shoppingcart.api import order_history
 from student.models import UserProfile
 from student.views import (
     signin_user as old_login_view,

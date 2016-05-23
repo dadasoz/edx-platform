@@ -1,0 +1,11 @@
+<div class="field u-field-order">
+    <span class="u-field-order-title" aria-hidden="true"><%- title %></span>
+    <span class="u-field-order-value"><%- date_placed %></span>
+    <span class="u-field-order-value"><%- total_price %></span>
+    <span class="u-field-order-value"><%- invoice_id %></span>
+    <span class="u-field-order-link">
+        <% if (receipt_url) { %>
+            <a class="u-field-link" target="_blank" href="<%- receipt_url %>"><%- gettext('Order Details') %></a>
+        <% } %>
+    </span>
+</div>

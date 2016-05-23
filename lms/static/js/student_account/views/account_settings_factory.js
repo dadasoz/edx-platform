@@ -11,7 +11,8 @@
 
         return function (fieldsData, authData, userAccountsApiUrl, userPreferencesApiUrl, accountUserId, platformName) {
             var accountSettingsElement, userAccountModel, userPreferencesModel, aboutSectionsData,
-                accountsSectionData, accountSettingsView, showAccountSettingsPage, showLoadingError;
+                accountsSectionData, ordersSectionData, accountSettingsView, showAccountSettingsPage,
+                showLoadingError;
 
             accountSettingsElement = $('.wrapper-account-settings');
 
@@ -167,13 +168,67 @@
                 }
             ];
 
+            var orderHistory = [
+                {
+                    'title': 'ORDER NAME',
+                    'date_placed': 'DATE PLACED',
+                    'total_excl_tax': 'TOTAL',
+                    'number': 'INVOICE ID'
+                },
+               {
+                  "status":"Complete",
+                  "billing_address": null,
+                   "title":"Seat in Receipt page with honor certificate",
+                   "number":"EDX-100039",
+                   "date_placed":"2016-04-21T10:26:36Z",
+                   "currency":"USD",
+                   "total_excl_tax":"0.00",
+                   "basket":39,
+                   "receipt_url":"/commerce/checkout/receipt/?basket_id=39"
+               },
+               {
+                  "status":"Complete",
+                  "billing_address": null,
+                   "title":"Seat in Verifying ECOM-3829 with honor certificate",
+                   "number":"EDX-100009",
+                   "date_placed":"2016-03-08T07:03:41Z",
+                   "currency":"USD",
+                   "total_excl_tax":"0.00",
+                   "basket":9,
+                   "receipt_url":"/commerce/checkout/receipt/?basket_id=9"
+               }
+            ];
+
+            ordersSectionData = [
+                {
+                    title: gettext('Your Orders'),
+                    subtitle: gettext(
+                        'View details of our past purchases and, potentially request a refund for a past order. For ' +
+                        'more information on refund request eligibility'
+                    ),
+                    fields: _.map(orderHistory, function(order) {
+                        return {
+                            'view': new AccountSettingsFieldViews.OrderHistoryFieldView({
+                                title: order.title,
+                                total_price: order.total_excl_tax,
+                                invoice_id: order.number,
+                                date_placed: order.date_placed,
+                                receipt_url: order.receipt_url,
+                                valueAttribute: 'order-' + order.number
+                            })
+                        };
+                    })
+                }
+            ];
+
             accountSettingsView = new AccountSettingsView({
                 model: userAccountModel,
                 accountUserId: accountUserId,
                 el: accountSettingsElement,
                 tabSections: {
                     aboutTabSections: aboutSectionsData,
-                    accountsTabSections: accountsSectionData
+                    accountsTabSections: accountsSectionData,
+                    ordersTabSections: ordersSectionData
                 },
                 userPreferencesModel: userPreferencesModel
             });

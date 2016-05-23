@@ -193,6 +193,37 @@
                     }
                 }
 
+                .u-field-order {
+                    width: 100%;
+
+                    .u-field-order-title {
+                        width: 30%;
+                        float: left;
+                    }
+
+                    .u-field-order-value {
+                        width: 20%;
+                        float: left;
+                    }
+
+                    .u-field-order-link {
+                        width: 10%;
+                        float: left;
+
+                        .u-field-link {
+                            @extend %ui-clear-button;
+
+                            // set styles
+                            @extend %btn-pl-default-base;
+                            @include font-size(14);
+                            border: 1px solid $blue;
+                            color: $blue;
+                            line-height: normal;
+                            padding: 10px;
+                        }
+                    }
+                }
+
                 .social-field-linked {
                     background: $m-gray-l4;
                     box-shadow: 0 1px 2px 1px $shadow-l2;

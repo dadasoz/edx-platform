@@ -22,12 +22,12 @@ from django.views.decorators.http import require_http_methods
 from lang_pref.api import released_languages, all_languages
 from edxmako.shortcuts import render_to_response
 
+from commerce.models import CommerceConfiguration
 from external_auth.login_and_register import (
     login as external_auth_login,
     register as external_auth_register
 )
-from lms.djangoapps.commerce.models import CommerceConfiguration
-from lms.djangoapps.shoppingcart.api import order_history
+from shoppingcart.api import order_history
 from student.models import UserProfile
 from student.views import (
     signin_user as old_login_view,
@@ -46,7 +46,9 @@ from openedx.core.djangoapps.user_api.accounts.api import request_password_chang
 from openedx.core.djangoapps.user_api.errors import UserNotFound
 
 
+
 AUDIT_LOG = logging.getLogger("audit")
+log = logging.getLogger(__name__)
 
 
 @require_http_methods(['GET'])
@@ -306,7 +308,6 @@ def _external_auth_intercept(request, mode):
         return external_auth_register(request)
 
 
-
 def _get_order_details(user):
     """ Retrieve order details for the user. """
     order_details = []
@@ -317,16 +318,25 @@ def _get_order_details(user):
 
     # for microsites, we want to filter and only show enrollments for courses within
     # the microsites 'ORG'
-    course_org_filter = microsite.get_value('course_org_filter')
+    course_org_filter = get_themed_value('course_org_filter')
 
     # Let's filter out any courses in an "org" that has been declared to be
     # in a Microsite
     org_filter_out_set = microsite.get_all_orgs()
 
+    try:
+        commerce_order_details = ecommerce_api_client(user).orders.get()
+    except Exception:  # pylint: disable=broad-except
+        log.exception('Failed to retrieve data from the Commerce API.')
+        return order_details
+
+    for order in commerce_order_details['results']:
+        if order['status'] == 'Complete':
+            order['receipt_url'] = '/commerce/checkout/receipt/?basket_id=' + str(order['basket'])
+            order_details.append(order)
     lms_order_details = order_history(user, course_org_filter=course_org_filter, org_filter_out_set=org_filter_out_set)
-    commerce_order_details = ecommerce_api_client(user).order.get()
-    order_details.append(commerce_order_details)
-    order_details.append(lms_order_details)
+    for order in lms_order_details:
+        order_details.append(order)
 
     cache.set(cache_key, order_details, CommerceConfiguration.CACHE_TTL)
 
@@ -426,6 +436,7 @@ def account_settings_context(request):
         'user_accounts_api_url': reverse("accounts_api", kwargs={'username': user.username}),
         'user_preferences_api_url': reverse('preferences_api', kwargs={'username': user.username}),
         'disable_courseware_js': True,
+        'order_history': _get_order_details(user),
     }
 
     if third_party_auth.is_enabled():

@@ -32,6 +32,8 @@ def order_history(user, **kwargs):
                     order_history_list.append({
                         'order_id': order_item.order.id,
                         'receipt_url': reverse('shoppingcart.views.show_receipt', kwargs={'ordernum': order_item.order.id}),
+                        'price': order_item.list_price,
+                        'title': unicode(order_item.course_id),
                         'order_date': ModuleI18nService().strftime(order_item.order.purchase_time, 'SHORT_DATE')
                     })
     return order_history_list

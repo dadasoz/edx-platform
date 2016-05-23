@@ -46,7 +46,6 @@ from openedx.core.djangoapps.user_api.accounts.api import request_password_chang
 from openedx.core.djangoapps.user_api.errors import UserNotFound
 
 
-
 AUDIT_LOG = logging.getLogger("audit")
 log = logging.getLogger(__name__)
 
@@ -308,22 +307,9 @@ def _external_auth_intercept(request, mode):
         return external_auth_register(request)
 
 
-def _get_order_details(user):
-    """ Retrieve order details for the user. """
+def _get_commerce_order_detail(user):
+    """ Retrieve order details for the user from Ecommerce. """
     order_details = []
-    cache_key = CommerceConfiguration.CACHE_KEY + '.' + user.username
-    cached = cache.get(cache_key)
-    if cached:
-        return cached
-
-    # for microsites, we want to filter and only show enrollments for courses within
-    # the microsites 'ORG'
-    course_org_filter = get_themed_value('course_org_filter')
-
-    # Let's filter out any courses in an "org" that has been declared to be
-    # in a Microsite
-    org_filter_out_set = microsite.get_all_orgs()
-
     try:
         commerce_order_details = ecommerce_api_client(user).orders.get()
     except Exception:  # pylint: disable=broad-except
@@ -332,8 +318,34 @@ def _get_order_details(user):
 
     for order in commerce_order_details['results']:
         if order['status'] == 'Complete':
-            order['receipt_url'] = '/commerce/checkout/receipt/?basket_id=' + str(order['basket'])
-            order_details.append(order)
+            order_data = {
+                'number': order['number'],
+                'price': order['total_excl_tax'],
+                'title': order['lines'][0]['title'],
+                'order_date': order['date_placed'],
+                'receipt_url': '/commerce/checkout/receipt/?basket_id=' + str(order['basket'])
+            }
+            order_details.append(order_data)
+
+    return order_details
+
+
+def _get_order_details(user):
+    """ Retrieve order details for the user. """
+    cache_key = CommerceConfiguration.CACHE_KEY + '.' + user.username
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    order_details = _get_commerce_order_detail(user)
+    # for microsites, we want to filter and only show enrollments for courses within
+    # the microsites 'ORG'
+    course_org_filter = get_themed_value('course_org_filter')
+
+    # Let's filter out any courses in an "org" that has been declared to be
+    # in a Microsite
+    org_filter_out_set = microsite.get_all_orgs()
+
     lms_order_details = order_history(user, course_org_filter=course_org_filter, org_filter_out_set=org_filter_out_set)
     for order in lms_order_details:
         order_details.append(order)
